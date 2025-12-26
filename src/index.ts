@@ -13,6 +13,7 @@
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
+		console.log('添加日志');
 		return new Response('Hello World! aaa');
 	},
 } satisfies ExportedHandler<Env>;
