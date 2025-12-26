@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "aged-hat-1b89",
+	"name": "cf-r2-tool",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-12-25",
 	"observability": {
