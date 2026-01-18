@@ -77,8 +77,7 @@ export async function handleUpload(request: Request, env: Env): Promise<Response
 		return new Response(
 			JSON.stringify({
 				code: 200,
-				msg: '上传成功',
-				fileName: originalName,
+				msg: 'success',
 				url: fullUrl, // 直接返回完整可访问的 URL
 			}),
 			{
