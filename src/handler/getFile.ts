@@ -3,16 +3,12 @@ import { Env } from '../index';
 export async function handleGetFile(request: Request, env: Env): Promise<Response> {
 	try {
 		const url = new URL(request.url);
-		const path = url.pathname;
+		// 【关键】：对 pathname 进行解码
+		const path = decodeURIComponent(url.pathname);
 
-		// 1. 解析路径
-		// 路径格式：/temp/9d31531b/1280X1280.PNG
 		const parts = path.split('/');
-		const bucketType = parts[1]; // temp 或 perm
-
-		// 【关键修改】：获取从第三段开始的所有内容并用 '/' 重新连接
-		// 这样就能拿到 "9d31531b/1280X1280.PNG"
-		const objectKeyFromUrl = parts.slice(2).join('/');
+		const bucketType = parts[1];
+		const objectKeyFromUrl = parts.slice(2).join('/'); // 此时这里已经是带空格的原始名字了
 
 		if (!objectKeyFromUrl) {
 			return new Response(JSON.stringify({ msg: '路径不完整', code: 400 }), { status: 400 });
