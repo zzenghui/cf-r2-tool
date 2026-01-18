@@ -9,7 +9,17 @@
 	"compatibility_date": "2025-12-25",
 	"observability": {
 		"enabled": true
-	}
+	},
+	"r2_buckets": [
+    {
+      "binding": "TEMP_BUCKET",
+      "bucket_name": "template",
+    },
+    {
+      "binding": "PERM_BUCKET",
+      "bucket_name": "forever",
+    }
+  ]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

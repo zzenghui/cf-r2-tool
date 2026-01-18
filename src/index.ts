@@ -1,19 +1,39 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+import { handleUpload } from './handler/upload';
+import { handleGetFile } from './handler/getFile';
+
+// 定义全局环境接口
+export interface Env {
+	TEMP_BUCKET: R2Bucket;
+	PERM_BUCKET: R2Bucket;
+}
 
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
-		console.log('添加日志');
-		return new Response('Hello World! aaa');
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		const url = new URL(request.url);
+		const path = url.pathname;
+
+		// 1. 路由逻辑：如果是上传接口
+		if (path === '/upload') {
+			if (request.method === 'POST' || request.method === 'PUT') {
+				return handleUpload(request, env);
+			}
+			return new Response(JSON.stringify({ msg: '上传请使用 POST 方法', code: 405 }), {
+				status: 405,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
+		// 2. 路由逻辑：预览/查看逻辑 (匹配 /temp/* 或 /perm/*)
+		const parts = path.split('/');
+		const bucketType = parts[1]; // temp 或 perm
+		if ((bucketType === 'temp' || bucketType === 'perm') && request.method === 'GET') {
+			return handleGetFile(request, env);
+		}
+
+		// 3. 默认 404
+		return new Response(JSON.stringify({ msg: '未找到路径', code: 404 }), {
+			status: 404,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	},
-} satisfies ExportedHandler<Env>;
+};
