@@ -5,6 +5,7 @@ import { handleGetFile } from './handler/getFile';
 export interface Env {
 	TEMP_BUCKET: R2Bucket;
 	PERM_BUCKET: R2Bucket;
+	AUTH_KEY: string;
 }
 
 export default {
