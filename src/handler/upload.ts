@@ -1,21 +1,7 @@
 import { Env } from '../index';
+import { withCors } from '../utils/cors';
 
 export async function handleUpload(request: Request, env: Env): Promise<Response> {
-	// 1. 鉴权：检查请求头中的 x-api-key 是否与 env 中的 AUTH_KEY 一致
-	// 注意：env.AUTH_KEY 将读取你设置的 Secret 或 .dev.vars 中的值
-	if (request.headers.get('x-api-key') !== env.AUTH_KEY) {
-		return new Response(
-			JSON.stringify({
-				code: 401,
-				msg: '鉴权失败：密码错误或未提供',
-			}),
-			{
-				status: 401,
-				headers: { 'Content-Type': 'application/json' },
-			}
-		);
-	}
-
 	// 2. 检查 Content-Type 是否为表单格式
 	const contentType = request.headers.get('content-type') || '';
 	if (!contentType.includes('multipart/form-data')) {
@@ -26,8 +12,10 @@ export async function handleUpload(request: Request, env: Env): Promise<Response
 			}),
 			{
 				status: 400,
-				headers: { 'Content-Type': 'application/json' },
-			}
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
+			},
 		);
 	}
 
@@ -41,14 +29,18 @@ export async function handleUpload(request: Request, env: Env): Promise<Response
 		if (!file || !file.name) {
 			return new Response(JSON.stringify({ code: 400, msg: '未检测到上传文件' }), {
 				status: 400,
-				headers: { 'Content-Type': 'application/json' },
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
 			});
 		}
 
 		if (bucketType !== 'temp' && bucketType !== 'perm') {
 			return new Response(JSON.stringify({ code: 400, msg: 'bucket 参数必须为 temp 或 perm' }), {
 				status: 400,
-				headers: { 'Content-Type': 'application/json' },
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
 			});
 		}
 
@@ -82,8 +74,10 @@ export async function handleUpload(request: Request, env: Env): Promise<Response
 			}),
 			{
 				status: 200,
-				headers: { 'Content-Type': 'application/json' },
-			}
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
+			},
 		);
 	} catch (e: any) {
 		return new Response(
@@ -93,8 +87,10 @@ export async function handleUpload(request: Request, env: Env): Promise<Response
 			}),
 			{
 				status: 500,
-				headers: { 'Content-Type': 'application/json' },
-			}
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
+			},
 		);
 	}
 }

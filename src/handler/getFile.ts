@@ -1,4 +1,5 @@
 import { Env } from '../index';
+import { withCors } from '../utils/cors';
 
 export async function handleGetFile(request: Request, env: Env): Promise<Response> {
 	try {
@@ -11,7 +12,13 @@ export async function handleGetFile(request: Request, env: Env): Promise<Respons
 		const objectKeyFromUrl = parts.slice(2).join('/'); // 此时这里已经是带空格的原始名字了
 
 		if (!objectKeyFromUrl) {
-			return new Response(JSON.stringify({ msg: '路径不完整', code: 400 }), { status: 400 });
+			return new Response(
+				JSON.stringify({ msg: '路径不完整', code: 400 }),
+				withCors(request, {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' },
+				})
+			);
 		}
 
 		// 2. 选择桶
@@ -27,7 +34,9 @@ export async function handleGetFile(request: Request, env: Env): Promise<Respons
 		if (object === null) {
 			return new Response(JSON.stringify({ msg: '文件不存在', code: 404 }), {
 				status: 404,
-				headers: { 'Content-Type': 'application/json' },
+				headers: withCors(request, {
+					headers: { 'Content-Type': 'application/json' },
+				}).headers,
 			});
 		}
 
@@ -35,10 +44,13 @@ export async function handleGetFile(request: Request, env: Env): Promise<Respons
 		const headers = new Headers();
 		object.writeHttpMetadata(headers);
 		headers.set('etag', object.httpEtag);
-		headers.set('Access-Control-Allow-Origin', '*');
+		const responseInit = withCors(request, { headers });
 
-		return new Response(object.body, { headers });
+		return new Response(object.body, responseInit);
 	} catch (e: any) {
-		return new Response(`读取异常: ${e.message}`, { status: 500 });
+		return new Response(
+			`读取异常: ${e.message}`,
+			withCors(request, { status: 500, headers: { 'Content-Type': 'text/plain' } })
+		);
 	}
 }
